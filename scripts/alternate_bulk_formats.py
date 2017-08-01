@@ -1,8 +1,12 @@
 import csv
 import json
+import glob
+import os
+
 import utils
 
-def run():
+
+def generate_csv():
 
 	#yaml filenames
 	yamls = ["legislators-current.yaml","legislators-historical.yaml"]
@@ -60,16 +64,12 @@ def run():
 	social = utils.load_data(yaml_social)
 
 	for filename in yamls:
-		print("Loading %s..." % filename)
+		print("Converting %s to YAML..." % filename)
+
 		legislators = utils.load_data(filename)
 
-		#convert yaml to json
-		utils.write(
-		json.dumps(legislators, sort_keys=True, indent=2, default=utils.format_datetime),
-		"../alternate_formats/%s.json" %filename.rstrip(".yaml"))
-
 		#convert yaml to csv
-		csv_output = csv.writer(open("../alternate_formats/%s.csv"%filename.rstrip(".yaml"),"w"))
+		csv_output = csv.writer(open("../" + filename.replace(".yaml", ".csv"),"w"))
 
 		head = []
 		for pair in bio_fields:
@@ -127,5 +127,21 @@ def run():
 
 			csv_output.writerow(legislator_row)
 
+def generate_json():
+
+	#yaml filenames
+    yamls = list(map(os.path.basename, glob.glob("../*.yaml")))
+
+    for filename in yamls:
+        print("Converting %s to JSON..." % filename)
+        data = utils.load_data(filename)
+
+		#convert yaml to json
+        utils.write(
+            json.dumps(data, default=utils.format_datetime, indent=2),
+            "../" + filename.replace(".yaml", ".json"))
+
 if __name__ == '__main__':
-	run()
+	generate_csv()
+	generate_json()
+
